@@ -58,83 +58,78 @@ Type `yes` when prompted to confirm the changes.
 └── README.md
 ```
 
+## Main Configuration (provider.tf)
+
+```terraform
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.54.0"
+    }
+  }
+}
+```
+
 ## Main Configuration (main.tf)
 
 ```terraform
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_security_group" "default" {
-  vpc_id = data.aws_vpc.default.id
-  filter {
-    name   = "group-name"
-    values = ["default"]
-  }
-}
-
-data "aws_availability_zones" "available" {
-  state = "available"
-}
+data "aws_availability_zones" "available" {}
 
 locals {
-  first_az = data.aws_availability_zones.available.names[0]
+  # azs = tolist(data.aws_availability_zones.available.names)
+  azs = slice(data.aws_availability_zones.available.names, 0, 3)
+  vpc_cidr = var.vpc_cidr
 }
 
-resource "aws_subnet" "webserver_subnet" {
-  vpc_id                  = data.aws_vpc.default.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = local.first_az
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.8.1"
+
+  name = "${var.project_name}-vpc"
+
+  azs  = local.azs
+  # azs = data.aws_availability_zones.available.names
+
+  private_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
+  public_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 100)]
+
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
+  enable_dns_hostnames = true
   map_public_ip_on_launch = true
-}
 
-module "webserver" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
-
-  name = "single-instance"
-
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  monitoring             = true
-  vpc_security_group_ids = [data.aws_security_group.default.id]
-  subnet_id              = aws_subnet.webserver_subnet.id
-
-  tags = {
-    Name = "Webserver"
-  }
+  tags = var.tags
 }
 ```
 
 ## Variables (variables.tf)
 
 ```terraform
-variable "instance_type" {
-  description = "The type of instance to create"
-  type        = string
-  default     = "t2.micro"
+variable "region" {
+  description = "AWS region"
+  default = "us-east-1"
 }
 
-variable "key_name" {
-  description = "The key pair name to use for the instance"
-  type        = string
-}
-```
-
-## Outputs (outputs.tf)
-
-```terraform
-output "instance_id" {
-  description = "The ID of the created EC2 instance"
-  value       = module.webserver.instance_id
+variable "project_name" {
+  description = "Project name"
+  default = "roro-jongrang"
 }
 
-output "subnet_id" {
-  description = "The ID of the created subnet"
-  value       = aws_subnet.webserver_subnet.id
+variable "vpc_cidr" {
+  description = "VPC CIDR"
+  default = "10.0.0.0/16"
+}
+variable "tags" {
+  description = "Tags for the resources"
+  type = map(string)
+  default = {
+    Project = "roro-jongrang"
+  }
 }
 ```
 
