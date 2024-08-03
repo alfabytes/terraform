@@ -52,9 +52,9 @@ Type `yes` when prompted to confirm the changes.
 
 ```bash
 .
+├── provider.tf
 ├── main.tf
 ├── variables.tf
-├── outputs.tf
 └── README.md
 ```
 
