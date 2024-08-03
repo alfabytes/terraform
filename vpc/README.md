@@ -58,7 +58,7 @@ Type `yes` when prompted to confirm the changes.
 └── README.md
 ```
 
-## Main Configuration (provider.tf)
+## Provider (provider.tf)
 
 ```terraform
 terraform {
