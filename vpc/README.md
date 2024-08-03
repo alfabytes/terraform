@@ -18,7 +18,7 @@ Configure your AWS CLI with your credentials and default region:
 aws configure
 ```
 
-### Step 2: Configure AWS CLI
+### Step 2: Initialize Terraform
 
 Navigate to the project directory and initialize Terraform:
 
