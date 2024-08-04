@@ -69,15 +69,15 @@ terraform {
     }
   }
 }
+
+provider "aws" {
+  region = var.region
+}
 ```
 
 ## Main Configuration (main.tf)
 
 ```terraform
-provider "aws" {
-  region = var.region
-}
-
 data "aws_availability_zones" "available" {}
 
 locals {
