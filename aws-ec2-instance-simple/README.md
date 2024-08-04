@@ -1,6 +1,6 @@
-# Terraform AWS VPC Project
+# Terraform AWS EC2 Project
 
-This Terraform project creates an AWS VPC along with associated resources such as subnets and security groups.
+This Terraform project creates an AWS EC2 along with associated resources such as VPC and security groups.
 
 ## Prerequisites
 
@@ -12,8 +12,10 @@ This Terraform project creates an AWS VPC along with associated resources such a
 
 ```bash
 .
-├── provider.tf
+├── key-pair.tf
 ├── main.tf
+├── provider.tf
+├── security-groups.tf
 ├── variables.tf
 └── README.md
 ```
